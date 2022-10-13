@@ -1,0 +1,112 @@
+---
+title: "Untitled"
+output: html_document
+date: "2022-10-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Data 
+
+Imported from: https://nysipm.cornell.edu/eiq/list-pesticide-active-ingredient-eiq-values/
+
+A Method to Measure the Environmental Impact of Pesticides
+
+Table 2: List of Pesticides. Last Updated JAN 2022	
+
+Action:	
+IGR = insect growth regulator
+PGR = plant growth regulator
+PA = plant activator
+CP = crop protectant
+BP = biopesticides
+B = bacteriacide
+AC = acaracide
+I = insecticide
+F = fungicide
+H = herbicide
+Fum = Soil fumigant
+M = Molluscicide 
+R = Rodenticide
+
+
+Missing Data:	
+None=no missing data values
+B = toxicity to beneficial insects
+P = plant surface half life
+Z = toxicity to bees
+C = chronic health effects
+R = runoff potential
+L = leaching potential
+S = soil residue half life
+
+The formula for determining the EIQ value of individual pesticides is listed below and is the average of the farm worker, consumer, and ecological components.
+
+$$ EIQ={C[(DT*5)+(DT*P)]+[(C*((S+P)/2)*SY)+(L)]+[(F*R)+(D*((S+P)/2)*3)+(Z*P*3)+(B*P*5)]}/3 $$
+
+Formula Symbols:	
+
+DT = Acute dermal toxicity  
+D = Toxicity to birds  
+F = Toxicity to fish  
+Z = Toxicity to bees  
+L = Leaching potential  
+R = Runoff potential  
+S = Soil residue half life  
+SY = Mode of action  
+C = Chronic health effects 
+P = Plant surface health effects  
+B = Toxicity to beneficials
+
+Mientras menor sea el valor de EIQ de campo, menor será el impacto ambiental. 
+
+A continuación se muestra una escala de EIQ que sirve de gu í a para clasificar los tratamientos realizados:
+
+Muy bajo: <5
+Bajo: 5-25
+Medio-alto: 25-45
+Muy alto: >45
+
+```{r}
+dat <- rio::import("EIQ-values-May_2022.xlsx", skip = 9) %>% 
+  janitor::clean_names( )
+dat %>% str
+```
+
+```{r}
+fungi <- dat %>% filter(str_detect(action, "F")) 
+
+fungi %>% pull(common_name)
+common_fungicides <- c(
+  #DMIs
+  "difenoconazole" , "cyproconazole", "epoxiconazole", 
+  "propiconazole", "prothioconazole","tebuconazole" ,
+  #QoIs
+  "azoxystrobin", 
+  "picoxystrobin", 
+  "pyraclostrobin",
+  "trifloxystrobin",
+  #SDHI
+  "benzovindiflupyr", "fluopyram", "fluxapyroxad" , 
+  "sedaxane",
+  #Multisites
+  "chlorothalonil", 
+   "mancozeb",  
+  # otros
+  "carbendazim", 
+  "metalaxyl"
+  )
+```
+
+```{r}
+fungi %>% 
+  filter(common_name %in% common_fungicides) %>% 
+  arrange(-eiq_value)
+```
+
+# References 
+
+- https://agry.um.ac.ir/article_34655.html?lang=en 
